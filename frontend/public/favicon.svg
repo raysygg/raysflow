@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
+  <defs>
+    <linearGradient id="rf-bg" x1="0" y1="0" x2="64" y2="64" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#3730a3" />
+      <stop offset="45%" stop-color="#4f46e5" />
+      <stop offset="85%" stop-color="#7c3aed" />
+      <stop offset="100%" stop-color="#f59e0b" />
+    </linearGradient>
+    <linearGradient id="rf-ray1" x1="12" y1="12" x2="52" y2="52" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#ffffff" />
+      <stop offset="100%" stop-color="#fef08a" />
+    </linearGradient>
+    <linearGradient id="rf-ray2" x1="20" y1="36" x2="48" y2="20" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#fbbf24" />
+      <stop offset="100%" stop-color="#ffffff" />
+    </linearGradient>
+  </defs>
+
+  <!-- Container Base -->
+  <rect width="64" height="64" rx="16" fill="url(#rf-bg)" />
+
+  <!-- Flow Light Rays Beam Graphics (Rays + Flow) -->
+  <path d="M16 16h14c6.075 0 11 4.477 11 10 0 4.2-2.85 7.8-7 9.3L42 50H33.5L25.5 37.3H23V50H16V16Zm7 6v9.3h7c2.375 0 4.3-1.8 4.3-4.65S32.375 22 30 22h-7Z" fill="url(#rf-ray1)" opacity="0.95"/>
+
+  <!-- Secondary Dynamic Ray Wave (Flow stream) -->
+  <path d="M26 30c6-4 12-2 18-8m-12 18c6-3 12 0 16-4" stroke="url(#rf-ray2)" stroke-width="3" stroke-linecap="round" />
+
+  <!-- Radiant Light Burst Nodes -->
+  <circle cx="48" cy="16" r="3.5" fill="#fef08a" />
+  <circle cx="53" cy="25" r="2.5" fill="#fbbf24" />
+  <circle cx="42" cy="46" r="2" fill="#ffffff" opacity="0.9" />
+</svg>

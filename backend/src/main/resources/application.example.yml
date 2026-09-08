@@ -1,0 +1,70 @@
+server:
+  port: 8090
+
+spring:
+  application:
+    name: enterprise-agent-studio
+  datasource:
+    url: ${DB_URL:jdbc:mysql://your-mysql-host:3306/enterprise_agent?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true}
+    username: ${DB_USERNAME:your_username}
+    password: ${DB_PASSWORD:your_password}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+mybatis-plus:
+  configuration:
+    map-underscore-to-camel-case: true
+
+app:
+  storage:
+    upload-dir: ${UPLOAD_DIR:data/uploads}
+  rag:
+    child-chunk-size: ${RAG_CHILD_CHUNK_SIZE:450}
+    child-chunk-overlap: ${RAG_CHILD_CHUNK_OVERLAP:60}
+    parent-chunk-size: ${RAG_PARENT_CHUNK_SIZE:1800}
+    embedding-batch-size: ${RAG_EMBEDDING_BATCH_SIZE:32}
+    mysql-chunk-batch-size: ${RAG_MYSQL_CHUNK_BATCH_SIZE:100}
+    model-timeout-seconds: ${RAG_MODEL_TIMEOUT_SECONDS:60}
+    default-candidate-limit: ${RAG_DEFAULT_CANDIDATE_LIMIT:80}
+    default-rerank-threshold: ${RAG_DEFAULT_RERANK_THRESHOLD:0.35}
+    default-no-hit-threshold: ${RAG_DEFAULT_NO_HIT_THRESHOLD:0.20}
+    default-score-gap-threshold: ${RAG_DEFAULT_SCORE_GAP_THRESHOLD:0.03}
+    default-max-context-tokens: ${RAG_DEFAULT_MAX_CONTEXT_TOKENS:6000}
+    default-max-documents: ${RAG_DEFAULT_MAX_DOCUMENTS:5}
+    default-max-parent-chunks: ${RAG_DEFAULT_MAX_PARENT_CHUNKS:8}
+    default-per-document-context-limit: ${RAG_DEFAULT_PER_DOCUMENT_CONTEXT_LIMIT:3}
+    vector-recall-weight: ${RAG_VECTOR_RECALL_WEIGHT:0.6}
+    lexical-recall-weight: ${RAG_LEXICAL_RECALL_WEIGHT:0.4}
+    exact-recall-boost: ${RAG_EXACT_RECALL_BOOST:0.25}
+    generation-retention-days: ${RAG_GENERATION_RETENTION_DAYS:7}
+    generation-cleanup-delay-ms: ${RAG_GENERATION_CLEANUP_DELAY_MS:3600000}
+    reranker-candidate-limit: ${RAG_RERANKER_CANDIDATE_LIMIT:30}
+    reranker-timeout-seconds: ${RAG_RERANKER_TIMEOUT_SECONDS:30}
+    reranker-budget: ${RAG_RERANKER_BUDGET:0}
+    local:
+      default-model: ${RAG_LOCAL_DEFAULT_MODEL:local-all-minilm-l6-v2}
+    qdrant:
+      base-url: ${QDRANT_BASE_URL:http://127.0.0.1:6333}
+      api-key: ${QDRANT_API_KEY:}
+      collection-prefix: ${QDRANT_COLLECTION_PREFIX:agent_studio_rag}
+      timeout-seconds: ${QDRANT_TIMEOUT_SECONDS:30}
+      upsert-batch-size: ${QDRANT_UPSERT_BATCH_SIZE:128}
+  project:
+    name: Enterprise Agent Studio
+    mode: blueprint
+  security:
+    jwt-secret: ${JWT_SECRET:replace-this-with-your-own-secret}
+  realtime:
+    max-connections-per-instance: ${REALTIME_MAX_CONNECTIONS_PER_INSTANCE:2000}
+    max-connections-per-user: ${REALTIME_MAX_CONNECTIONS_PER_USER:10}
+    max-subscribers-per-resource: ${REALTIME_MAX_SUBSCRIBERS_PER_RESOURCE:100}
+    send-time-limit-millis: ${REALTIME_SEND_TIME_LIMIT_MILLIS:10000}
+    send-buffer-size-bytes: ${REALTIME_SEND_BUFFER_SIZE_BYTES:262144}
+    max-text-message-buffer-size: ${REALTIME_MAX_TEXT_MESSAGE_BUFFER_SIZE:65536}
+    session-idle-timeout-seconds: ${REALTIME_SESSION_IDLE_TIMEOUT_SECONDS:90}
+    heartbeat-interval-seconds: ${REALTIME_HEARTBEAT_INTERVAL_SECONDS:25}
+    ticket-ttl-seconds: ${REALTIME_TICKET_TTL_SECONDS:30}
+    knowledge-snapshot-ttl-minutes: ${REALTIME_KNOWLEDGE_SNAPSHOT_TTL_MINUTES:120}
+    terminal-snapshot-ttl-minutes: ${REALTIME_TERMINAL_SNAPSHOT_TTL_MINUTES:15}
+    execution-snapshot-ttl-hours: ${REALTIME_EXECUTION_SNAPSHOT_TTL_HOURS:24}
+    dispatch-queue-capacity: ${REALTIME_DISPATCH_QUEUE_CAPACITY:2000}
+    redis-health-check-delay-millis: ${REALTIME_REDIS_HEALTH_CHECK_DELAY_MILLIS:5000}

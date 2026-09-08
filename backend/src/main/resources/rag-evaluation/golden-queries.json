@@ -1,0 +1,10 @@
+[
+  {"caseId":"zh-001","language":"ZH","query":"如何配置租户模型路由","expectedTags":["semantic","tenant-routing"]},
+  {"caseId":"en-001","language":"EN","query":"How do I rotate an embedding model?","expectedTags":["phrase","generation"]},
+  {"caseId":"mix-001","language":"MIXED","query":"RAG reranker 超时如何降级","expectedTags":["hybrid","reranker-fallback"]},
+  {"caseId":"code-001","language":"MIXED","query":"ERR_AUTH_401 API_V2","expectedTags":["exact","identifier"]},
+  {"caseId":"url-001","language":"MIXED","query":"https://api.example.com/v2/rag","expectedTags":["exact","url"]},
+  {"caseId":"version-001","language":"MIXED","query":"agent.rag.mode v2.7.1","expectedTags":["exact","config-version"]},
+  {"caseId":"cross-001","language":"EN","query":"embedding model version migration","expectedTags":["cross-language","generation"]},
+  {"caseId":"long-001","language":"ZH","query":"在不影响线上旧索引的情况下切换租户自有模型并验证维度","expectedTags":["semantic","multi-chunk"]}
+]
