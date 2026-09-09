@@ -1,78 +1,111 @@
-# Enterprise Agent Studio
+# Enterprise Agent Studio · 光流智能引擎 (Raysflow OS)
 
-Enterprise Agent Studio 是一个面向企业内部场景的 Agent、知识库和工作流编排平台。它的核心原则是：业务数据落 MySQL，节点能力由数据库目录驱动，草稿和正式版本分离，正式运行必须经过租户、资源和权限校验。
+Enterprise Agent Studio 是一个面向企业复杂业务场景的 Agent 操作系统、知识库检索增强（RAG）和可视化工作流编排平台。
 
-## 1. 能力总览
+系统秉持“**生产数据严密隔离、版本快照不可变、执行过程强可观测、业务事实真实落库**”的工程原则：
+- **统一应用生命周期**：从草稿演进、候选版本固化、自动化质量评测、准入门禁判定，到不可变 Release 版本发布与生产指针秒级回滚。
+- **混合 RAG 与知识运营**：采用 Parent-Child 双层切块架构，基于 Qdrant 高性能向量索引与多语言词法检索加权混合召回，支持防幻觉空召回拒答与引用源溯源。
+- **多渠道应用入口**：统一发布 Chat 对话、表单交互、OpenAPI、Webhook 回调与 Cron 定时调度等多渠道入口，所有生产调用全量锚定活动 Release。
+- **原生 Agent 运行时**：具备任务执行租约、心跳机制、分步节点事件追踪、人工审批挂起恢复、幂等去重与故障恢复重放能力。
+- **SaaS 商业化与数据治理**：提供多租户隔离、细粒度组织与 IAM 授权、套餐权益配额准入、用量成本核算、数据保留策略与 Legal Hold 法律冻结。
 
-### 1.1 企业与安全
+---
 
-- 多租户隔离：所有业务数据按 `tenant_id` 隔离。
-- 登录与会话：登录接口签发短期访问令牌，并使用 HttpOnly refresh token 管理会话续期。
-- 组织架构：企业、部门、团队、成员、直属上级和主组织。
-- 角色权限：角色菜单权限、资源例外授权、工作流草稿/发布/运行权限。
-- 运维安全：API 限流、合规规则、API Key、审计日志和设备会话管理。
+## 1. 核心能力总览
 
-### 1.2 Agent 与对话
+### 1.1 统一业务应用生命周期 (Application Lifecycle)
+- **草稿与候选版本**：应用配置与画布流程支持反复编辑草稿；支持一键固化为不可变的候选版本（Release Candidate），并提供拓扑结构 Diff 比对。
+- **自动化评测与基线对比**：针对候选版本关联版本化测试集（Evaluation Suite），支持多样本并发评测，评测指标包含任务成功率、Groundedness 引用忠实度、平均耗时与模型成本。
+- **质量门禁卡点 (Release Gate)**：系统基于评测证据自动比对准入阈值；支持授权管理员在合规前提下执行人工审批豁免（Override）。
+- **不可变版本与秒级回滚**：通过门禁后生成全局唯一的不可变正式版本（Release）；生产指针（`FOLLOW_PRODUCTION`）支持秒级一键回滚，历史版本永久归档不可篡改。
 
-- Agent 从数据库读取模型、团队和工作流资源。
-- Agent 可以是对话型或工作流型。
-- 对话型 Agent 通过 WebSocket 实时返回消息和执行状态。
-- 工作流型 Agent 只能运行生产环境绑定的正式版本，不直接运行未发布草稿。
+### 1.2 可视化工作流编排 (Workflow Studio)
+工作流节点完全由数据库节点目录（`orchestration_node_type`）动态驱动，支持丰富的企业级编排能力：
+- **基础流程控制**：开始（START）、结束（END）、条件分支（CONDITION）、并行分支（PARALLEL）、并行聚合（JOIN）、循环（LOOP）、迭代子图（ITERATION）、智能路由（ROUTER）。
+- **会话与提示词**：用户输入（USER_INPUT）、直接回显（DIRECT_REPLY）、提示词模板（PROMPT_TEMPLATE）、上下文组装（CONTEXT_BUILDER）、会话记忆窗口（SESSION_MEMORY）、意图分类器（QUESTION_CLASSIFIER）、参数提取器（PARAMETER_EXTRACTOR）。
+- **模型与知识**：大语言模型生成（LLM，支持主备模型、Prompt 编排、结构化 JSON 输出与重试策略）、知识检索（RAG，支持混合检索、语言策略与文档范围过滤）。
+- **Agent 与协作**：单个 Agent 调用（AGENT）、多角色协作团队（AGENT_TEAM）、图编排运行时（GRAPH_ORCHESTRATOR，对接 LangGraph / AutoGen / Crew 拓扑）。
+- **数据处理与转换**：数据转换（TRANSFORM）、Jinja2 模板渲染（TEMPLATE_TRANSFORM）、变量聚合（VARIABLE_AGGREGATOR）、变量赋值（VARIABLE_ASSIGNMENT）、列表算子（LIST_OPERATOR）、文档解析提取（DOCUMENT_EXTRACTOR）。
+- **外部集成与连接器**：HTTP 请求（HTTP_REQUEST）、OpenAPI 规范工具（OPENAPI）、MCP 服务器协议（MCP）、Webhook 回调（WEBHOOK）、租户内部 API（INTERNAL_API）、网页抓取（WEB_CRAWLER）、代码执行沙箱（CODE）。
+- **人在回路 (Human-in-the-loop)**：人工审批节点（HUMAN），支持指定审批团队、风险级别，执行时挂起等待人工决策。
 
-### 1.3 知识库与 RAG
+### 1.3 企业级知识库与多语言混合 RAG
+- **双层切块架构**：支持 Parent-Child 父子切块，以精细子块实现高准确度召回，以完整父块提供丰富上下文。
+- **Qdrant 向量索引**：使用 Qdrant 高性能向量数据库存储切块向量，支持元数据过滤、租户级集合隔离与多实例部署。
+- **多语言混合检索**：融合向量相似度召回（Vector Recall）、词法稀疏检索（Lexical Search）与精确匹配提权（Exact Recall Boost），动态加权打分。
+- **重排序与忠实度校验**：支持 Reranker 二次重排；当召回相似度不足时主动触发空命中拒答，并对模型回答进行 Groundedness 引用真实度核验，杜绝幻觉。
+- **知识快照与生命周期**：索引生成任务（Generation）版本化管理，支持多版本快照、无缝热切换与过期索引按策略自动归档清理。
 
-- 文档元数据、分片、标签和索引任务落 MySQL。
-- 向量索引当前使用本地文件持久化，文件位置由 `app.rag.vector-store-file` 配置。
-- 检索使用向量 + 关键词混合召回，结果包含来源文档和分片信息，便于回答追溯。
-- 会话预览、工作流与评测在空命中时拒答，并对模型回答做 grounded 引用校验。
-- 每次检索写入 `rag_retrieval_metric`，运营中心展示真实命中率。
-- 文档上传、切块、索引、检索和失败重试均有状态记录。
+### 1.4 多渠道应用入口 (Multi-Channel Entrypoints)
+- **应用工作台 (Chat Console)**：支持流式 SSE 与 WebSocket 双向会话、富文本 Markdown / 安全 HTML 实时渲染、思考过程展开与引用源精准溯源。
+- **表单填报入口 (Form)**：基于 JSON Schema 自动渲染动态表单，支持立即执行与异步轮询。
+- **开放 API (OpenAPI REST)**：支持第三方系统基于 API Key / Bearer 鉴权调用应用，提供同步响应与异步任务模式。
+- **Webhook 事件接收**：支持 HMAC 签名防伪造校验，便于与企业外部系统或自建系统快速打通。
+- **定时调度任务 (Schedule)**：支持按 Cron 表达式自动周期触发。
+- **版本锚定策略**：所有外部入口支持固定跟随生产指针或锚定特定版本号，杜绝草稿未发布内容意外上线。
 
-### 1.4 工作流编排
+### 1.5 原生 Agent 运行时与运维容灾 (Native Runtime)
+- **任务状态机与租约**：任务执行过程支持租约获取（Lease）、状态心跳保活、超时自动释放与故障检测。
+- **链路级全量追踪**：节点输入、输出、错误堆栈、执行耗时与重试次数落库持久化，支持在“运行中心”展开全流程甘特图与调用拓扑。
+- **故障处理与任务重放**：支持任务暂停、恢复、取消；在“故障处理中心”可针对失败节点或超时任务一键重试与重放。
+- **人工审批中心**：专属任务中心承载挂起的人工审批，展示审批材料与决策上下文，审批通过后流程自动恢复执行。
 
-工作流由以下部分组成：
+### 1.6 模型中心与价格核算
+- **平台共享与租户模型**：超级管理员配置平台共享模型，普通租户可补充配置私有模型；凭证加密存储，租户侧脱敏使用。
+- **多协议适配与上游映射**：兼容 OpenAI 标准协议、Anthropic 协议及本地嵌入模型；支持配置上游真实模型名映射，解耦内部标识与上游透传名。
+- **模型连接诊断**：提供连通性与能力在线诊断，实时验证网络连通性与 Key 有效性。
+- **模型单价与费用账本**：支持针对输入/输出 Token 分别配置阶梯计费规则，实时统计每次调用的 Token 消耗与核算成本。
 
-- 节点：业务处理单元，例如开始、结束、模型生成、知识检索、Agent 调用、条件分支、人工审批、并行、循环和连接器调用。
-- 边：节点之间的有向连接，保存稳定的节点 ID 和端口。
-- 变量：节点之间传递的输入、输出和中间值。
-- 节点目录：保存在 `orchestration_node_type`，包含显示名称、说明、能力、权限、端口、配置 schema 和执行器标识。
-- 草稿：可反复编辑的修订版本。
-- 正式版本：发布后不可变的版本快照。
-- 环境指针：例如 `PRODUCTION` 指向当前正式版本，回滚只切换指针，不修改历史版本。
+### 1.7 SaaS 商业治理与企业数据合规
+- **企业身份治理 (IAM)**：支持组织架构、部门、团队与成员管理，支持直属上级防循环绑定；支持 OIDC、SAML、SCIM 协议及双因子认证（MFA）。
+- **细粒度数据范围与审批范围**：角色支持按部门、本级或全部组织约束数据范围与审批权限；支持设备会话管理与异常强退。
+- **套餐、权益与用量账本**：支持按版本管理商业套餐，按 Model Token、Workflow Run、知识库存储等维度设置软阈值与硬阈值；提供账期汇总与月度账单。
+- **数据合规治理**：支持数据保留策略（Retention Policy）、数据脱敏导出、删除审批流程与 Legal Hold 法律冻结，支持跨 MySQL、Redis、Qdrant 与本地存储的协同清理。
 
-### 1.5 执行与观测
+---
 
-- 执行上下文、节点事件、会话消息和调用事实落库。
-- 支持幂等键，重复提交同一个业务请求不会重复执行。
-- 支持执行租约、心跳、暂停、恢复、取消和可恢复任务查询。
-- 支持人工审批挂起和决策后继续执行。
-- 工作流执行中心展示节点输入、输出、错误、尝试次数和追踪信息。
+## 2. 技术架构
 
-## 2. 技术栈
+| 层次 | 选型与组件 | 核心用途与说明 |
+| --- | --- | --- |
+| **前端框架** | Vue 3 + Vite 6 + Vue Router 4 | 现代化响应式单页面架构，前后端分离 |
+| **前端组件库** | Element Plus | 紧凑型企业级 SaaS UI 组件体系与全中文交互 |
+| **后端框架** | Spring Boot 3.3.1 + Java 17 | 核心应用服务端，提供 REST API、WebSocket 与任务调度 |
+| **安全与认证** | Spring Security + JWT + HttpOnly Cookie | 访问令牌 + 刷新令牌机制、MFA、数据权限拦截 |
+| **ORM 与持久化** | MyBatis-Plus 3.5.7 + MySQL 8.0+ | 强类型 Lambda 表达式，租户隔离，业务事实不可篡改存储 |
+| **缓存与实时能力** | Redis 6+ | 分布式限流、执行租约与心跳、临时 Ticket、会话缓存 |
+| **向量检索数据库** | Qdrant 1.7+ | 知识库切块向量存储、相似度高效检索与多租户集合隔离 |
+| **大模型框架** | LangChain4j 0.33.0 | OpenAI 兼容接口、Anthropic 适配、BGE/MiniLM 文本嵌入 |
+| **文档解析与提取** | Apache Tika (LangChain4j Document Parser) | 支持 PDF、DOCX、TXT、MD 等多格式企业文档解析 |
+| **API 文档与规范** | Springdoc OpenAPI 3.0 / Swagger UI | `/swagger-ui.html` 交互式接口文档与测试 |
 
-| 层次 | 技术 |
-| --- | --- |
-| 前端 | Vue 3、Vite、Vue Router、Axios |
-| 后端 | Java 17、Spring Boot 3.3、Spring Security、WebSocket、SSE |
-| 持久化 | MySQL、MyBatis-Plus |
-| 缓存与限流 | Redis |
-| 模型与 RAG | LangChain4j、OpenAI 兼容接口、BGE 中文 embedding |
-| 本地运行 | Node.js、Maven |
+---
 
-## 3. 环境要求
+## 3. 环境准备
 
-- JDK 17+
-- Maven 3.9+
-- Node.js 18+
-- MySQL 8.0+
-- Redis 6+
-- PowerShell 5+（Windows 下执行校验脚本需要）
+- **JDK**: 17+
+- **Maven**: 3.9+
+- **Node.js**: 18+ (推荐 Node 20+)
+- **MySQL**: 8.0+ (字符集务必使用 `utf8mb4`)
+- **Redis**: 6.0+
+- **Qdrant**: 1.7+ (企业级向量数据库，可通过 Docker 一键启动)
+- **PowerShell**: 5.1+ (用于执行 Windows 环境下的静态校验脚本)
 
-## 4. 第一次初始化
+---
 
-### 4.1 创建数据库
+## 4. 快速初始化与配置
 
-先创建数据库，不要直接把多个历史 migration 文件拼在一起执行：
+### 4.1 启动依赖中间件
+
+在本地或测试服务器确保 MySQL、Redis 和 Qdrant 正常运行。以 Docker 为例启动 Qdrant：
+
+```bash
+docker run -d --name qdrant -p 6333:6333 -p 6334:6334 -v $(pwd)/data/qdrant:/qdrant/storage qdrant/qdrant
+```
+
+### 4.2 创建数据库并初始化
+
+创建数据库（注意指定 utf8mb4 字符集）：
 
 ```sql
 CREATE DATABASE enterprise_agent
@@ -80,56 +113,83 @@ CREATE DATABASE enterprise_agent
   COLLATE utf8mb4_unicode_ci;
 ```
 
-### 4.2 执行结构和基础数据
+针对初始化脚本，项目提供两种初始化方式：
 
-新环境只需要按以下顺序执行两个文件：
+#### 方式一：一键导入基线结构与初始数据（推荐快速上手）
+项目根目录下的 `enterprise_agent.sql` 包含了当前系统的完整表结构、节点目录、初始菜单、系统租户与超管账户：
 
 ```bash
-mysql -h your-host -P 3306 -u your-user -p enterprise_agent < backend/sql/schema.sql
-mysql -h your-host -P 3306 -u your-user -p enterprise_agent < backend/sql/data.sql
+mysql -h localhost -P 3306 -u root -p enterprise_agent < enterprise_agent.sql
 ```
 
-Windows PowerShell 也可以使用：
+若有最新补丁脚本（如 `backend/sql/044-20260907-model-upstream-name.sql`），在导入基线后增量执行即可。
 
-```powershell
-Get-Content -Raw backend/sql/schema.sql | mysql -h your-host -P 3306 -u your-user -p enterprise_agent
-Get-Content -Raw backend/sql/data.sql | mysql -h your-host -P 3306 -u your-user -p enterprise_agent
-```
+#### 方式二：按顺序执行迁移与种子脚本
+如需从纯净脚本逐步构建，请遵循 `backend/sql/SQL-执行顺序.md` 规范：
+1. 结构与迁移脚本：执行 `000-schema-base.sql` 至 `036-saas-governance-commercial-closure.sql`。
+2. 基础数据脚本：执行 `000-data-base.sql` 与 `018-data-reconciliation.sql`。
+3. 清理与标准种子：执行 `037-development-data-clear.sql`，再执行 `038-development-clean-seed.sql`（写入租户、角色、菜单、超管）与 `039-development-node-catalog-seed.sql`（写入完整节点库）。
+4. （可选）冒烟用例：执行 `040-development-smoke-seed.sql`（写入基础回显测试应用 dev-smoke-app）。
+5. 执行最新增量补丁 `043` 与 `044`。
 
-`schema.sql` 只创建表、索引和约束；`data.sql` 写入租户、角色、菜单、节点目录和演示基础数据。已有业务数据的环境不要重复执行 `data.sql`，应按发布流程执行对应 migration。
+#### 默认初始化账号
+- **所属租户**：系统租户（租户编码：`system`，租户 ID：`1`）
+- **管理员账号**：`admin`
+- **初始密码**：`admin123`
+- *注：初始密码仅用于本地开发测试，生产环境首次登录后务必及时修改！*
 
 ### 4.3 配置环境变量
 
-复制根目录 `.env.example` 为 `.env`，至少填写：
+复制根目录下的 `.env.example` 为 `.env`，根据实际环境调整配置参数：
 
 ```dotenv
+# MySQL 数据库连接
 DB_URL=jdbc:mysql://localhost:3306/enterprise_agent?useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true
-DB_USERNAME=your_username
-DB_PASSWORD=your_password
-JWT_SECRET=replace-with-a-long-random-secret
-APP_SECRET_KEY=replace-with-a-different-random-secret
+DB_USERNAME=root
+DB_PASSWORD=your_mysql_password
+
+# 生产环境务必替换为高强度随机密钥，两者建议不同
+JWT_SECRET=replace-with-a-very-long-random-secret-key-32chars
+APP_SECRET_KEY=replace-with-a-different-long-secret-key-32chars
+
+# Redis 缓存与分布式限流
 REDIS_HOST=localhost
 REDIS_PORT=6379
+REDIS_PASSWORD=
+REDIS_DATABASE=0
+
+# Qdrant 向量数据库连接
+QDRANT_BASE_URL=http://127.0.0.1:6333
+QDRANT_API_KEY=
+
+# 文件上传与任务队列
+UPLOAD_DIR=data/uploads
+TASK_QUEUE_POLL_DELAY_MS=1000
+TASK_QUEUE_HEARTBEAT_TIMEOUT_SECONDS=120
+TASK_QUEUE_RETRY_DELAY_SECONDS=30
 ```
 
-生产环境必须使用独立的随机 `JWT_SECRET` 和 `APP_SECRET_KEY`，不要把 `.env` 提交到 Git。
+---
 
-## 5. 启动项目
+## 5. 项目启动与访问
 
-### 5.1 启动后端
+### 5.1 启动后端服务
 
-在项目根目录执行：
+在项目根目录下进入 `backend` 目录，通过 Maven 启动服务：
 
 ```powershell
 cd backend
 mvn spring-boot:run
 ```
 
-默认后端地址为 `http://localhost:8090`。
+- 后端服务默认端口：`8090`
+- 健康检查端点：`http://localhost:8090/actuator/health`
+- Swagger UI 接口文档：`http://localhost:8090/swagger-ui.html`
+- OpenAPI 规范 JSON：`http://localhost:8090/v3/api-docs`
 
-### 5.2 启动前端
+### 5.2 启动前端工程
 
-另开一个终端：
+另起一个终端，进入 `frontend` 目录安装依赖并启动开发服务器：
 
 ```powershell
 cd frontend
@@ -137,159 +197,145 @@ npm install
 npm run dev
 ```
 
-默认前端地址为 `http://localhost:5176`。开发环境 Vite 会将 `/api` 和 `/ws` 代理到 `VITE_DEV_BACKEND_URL`，默认是 `http://localhost:8090`。
+- 前端服务默认地址：`http://localhost:5176`
+- 开发模式下，Vite 自动将 `/api` 与 `/ws` 反向代理到后端 `http://localhost:8090`。
 
-### 5.3 构建前端
+### 5.3 生产编译与打包
 
 ```powershell
+# 前端静态资源构建（产物位于 frontend/dist）
 cd frontend
 npm run build
+
+# 后端可执行 Jar 包构建（产物位于 backend/target）
+cd backend
+mvn clean package -DskipTests
 ```
 
-## 6. 推荐业务操作顺序
+---
 
-1. 使用租户管理员登录，确认企业、角色和组织架构。
-2. 在“模型底座”配置真实模型连接，并完成一次可用性检查。
-3. 在“知识库”上传文档，等待索引状态变为可用。
-4. 在“Agent 工作台”创建 Agent，选择数据库中的模型、团队和已发布工作流。
-5. 在“工作流编排”创建草稿，添加节点、填写节点属性并连接节点。
-6. 点击“保存草稿”，查看“发布检查”返回的阻断项。
-7. 解决所有必填字段、资源权限和执行器问题后发布。
-8. 在“运行预览”调试单节点或执行生产版本。
-9. 在“工作流执行”查看执行链路、错误和节点输出。
-10. 若流程暂停在人工审批，到“人工审批中心”提交意见后继续执行。
+## 6. 端到端典型使用流程
 
-## 7. 工作流编排使用说明
+```mermaid
+flowchart LR
+    A[1.模型配置] --> B[2.知识库切块入库]
+    B --> C[3.业务应用与工作流编排]
+    C --> D[4.候选版本固化]
+    D --> E[5.自动化评测与门禁比对]
+    E --> F[6.不可变版本发布]
+    F --> G[7.多渠道入口交付使用]
+    G --> H[8.运行观测与故障重放]
+```
 
-### 7.1 创建画布
+1. **配置模型底座**：登录后进入“模型中心”，配置平台共享模型或租户私有模型（例如 `gpt-4o-mini` 或兼容模型服务），完成连通性检测。
+2. **构建企业知识库**：进入“知识库”，创建知识库并上传企业文档；系统使用 Parent-Child 切块并将向量安全写入 Qdrant。
+3. **编排业务应用**：在“业务应用”中新建应用并进入“应用执行流程”，按业务场景自由组合开始、提示词模板、模型生成、知识检索、条件分支与人工审批等节点。
+4. **生成候选版本**：编排保存草稿后，点击固化生成发布候选版本（Candidate），直观比对与上一版本的拓扑结构差异。
+5. **自动化评测与门禁**：在“评测中心”运行针对该候选版本的评测任务；门禁系统将自动比对任务成功率、Groundedness 忠实度与耗时，生成发布门禁证据。
+6. **发布正式版本**：门禁通过后，一键生成不可变正式 Release，生产指针自动平滑切换。
+7. **多渠道应用接入**：在“应用入口”获取对话链接、动态表单地址、开放 REST 接口契约或 Webhook 密钥，分发至业务系统。
+8. **监控与运营闭环**：在“运行中心”追踪任务执行链路，在“任务中心”完成审批挂起决策，在“故障处理”处理任务重试，在“套餐与权益”观测用量与成本消耗。
 
-- 工作流名称：给业务人员看的名称。
-- 唯一编码：系统识别用，创建后不建议修改。
-- 运行模式：`业务工作流` 用于自动化任务；`对话流` 用于聊天入口和多轮会话。
-- 左侧节点库由后端节点目录生成，不是前端写死的完整能力列表。
-- 点击节点可以添加到画布，也可以拖到画布指定位置。
+---
 
-### 7.2 配置节点
-
-单击画布节点后，右侧会打开悬浮配置面板，不会压缩画布。配置面板包含：
-
-- 显示名称：只影响画布和执行记录展示。
-- 基础配置：后端 schema 标记的必填字段。
-- 高级设置：超时、重试、上下文、输出结构等可选项。
-- 真实资源选择：模型、知识文档、Agent、组织审批组和连接器均从后端接口读取。
-- 帮助文案：说明字段用途、示例和为空时的下一步。
-
-运行时使用 ID 或稳定编码关联资源，节点名称和模型显示名称不会作为运行时关联键。
-
-### 7.3 常用节点
-
-| 节点 | 用途 | 配置重点 |
-| --- | --- | --- |
-| 开始 | 工作流入口 | 通常无需额外配置 |
-| 结束 | 工作流出口 | 确保所有有效路径可以到达 |
-| 模型生成 | 调用模型生成文本 | 主模型、备用模型、Prompt、输出结构 |
-| 知识检索 | 检索已索引文档 | 文档范围、检索策略、召回数量、元数据过滤 |
-| Agent 调用 | 调用另一个 Agent | 选择已配置 Agent 和输入变量 |
-| 条件分支 | 根据值选择路径 | 判断变量、操作符、满足/不满足目标 |
-| 人工审批 | 挂起等待人工决策 | 审批标题、说明、审批组、风险级别 |
-| 并行/聚合 | 并行执行并汇总 | 分支和聚合关系、输出合并规则 |
-| HTTP/OpenAPI/MCP | 调用外部工具 | 连接器、方法、参数、超时、重试和错误策略 |
-
-### 7.4 连线和发布
-
-- 连接点左侧是输入，右侧是输出。
-- 也可以在左侧“连接节点”区域选择上游和下游节点后添加连线。
-- 一个有效业务图必须有且只有一个开始节点和一个结束节点。
-- 节点不能自连，边不能重复，所有业务节点必须可从开始节点到达并最终到达结束节点。
-- 发布前会检查节点目录状态、执行器、必填配置、端口、资源和权限。
-- 发布生成不可变正式版本，并把环境指针更新到该版本。
-- 回滚只切换环境指针，历史版本保留不删除。
-
-## 8. 数据和代码边界
-
-### 8.1 应该落数据库的数据
-
-- 租户、用户、组织、角色和权限。
-- 模型连接、路由规则、配额和合规规则。
-- Agent、工作流草稿、正式版本、环境指针。
-- 节点目录、节点 schema、节点配置和图边。
-- 知识文档、分片、索引任务和标签。
-- 会话、消息、执行上下文、节点事件、调用指标和审计日志。
-
-### 8.2 允许在代码中的内容
-
-- Java 枚举和协议常量，例如状态值、权限动作和节点类型代码。
-- 安全校验、执行器分派和不可变业务规则。
-- 前端仅用于显示的中文标签映射；真实选项和资源仍由接口/schema 提供。
-
-### 8.3 RAG 向量文件
-
-MySQL 保存文档和分片元数据；当前向量索引文件由 `app.rag.vector-store-file` 指定。生产多实例部署前，需要将向量存储替换为共享向量数据库或共享持久化存储。
-
-## 9. 目录说明
+## 7. 项目目录结构
 
 ```text
-frontend/src/views/                 页面和业务交互
-frontend/src/components/workflow/   节点配置组件
-frontend/src/api/                   HTTP API 封装
-backend/src/main/java/.../interfaces REST、WebSocket、SSE 入口
-backend/src/main/java/.../application 业务编排和执行服务
-backend/src/main/java/.../domain    领域模型和业务对象
-backend/src/main/java/.../infrastructure 数据库、节点目录、RAG、连接器实现
-backend/sql/schema.sql              数据库结构
-backend/sql/data.sql                初始基础数据
-scripts/                            静态校验脚本
-docs/                               需求、设计、部署和审计资料
+enterprise-agent-studio/
+├── AGENTS.md                               # 项目架构说明与编码守则
+├── README.md                               # 项目说明与快速起步文档
+├── enterprise_agent.sql                    # 数据库完整表结构与初始种子转储
+├── .env.example                            # 环境变量配置模板
+├── backend/                                # 后端 Spring Boot 工程
+│   ├── pom.xml                             # 后端 Maven 依赖配置
+│   ├── sql/                                # 顺序结构迁移与种子脚本目录 (000 ~ 044)
+│   │   └── SQL-执行顺序.md                 # 数据库迁移执行顺序规范
+│   └── src/main/java/com/acme/agentstudio/
+│       ├── interfaces/rest/                # REST 控制器 (应用生命周期、编排、运行时、鉴权、SaaS等)
+│       ├── application/                    # 应用服务层 (组织事务、跨领域流程、门禁判定、执行编排)
+│       ├── domain/                         # 领域模型 (强类型契约、状态枚举、业务规则、不可变事实)
+│       ├── infrastructure/                 # 基础设施层 (MyBatis-Plus、Qdrant 向量适配、LangChain4j)
+│       ├── config/                         # 系统配置 (Spring Security、WebSocket、线程池、RagProperties)
+│       └── common/                         # 公共组件 (统一响应封装、全局异常处理、错误码)
+├── frontend/                               # 前端 Vue 3 + Vite 工程
+│   ├── package.json                        # 前端依赖与脚本配置
+│   ├── vite.config.js                      # Vite 构建与代理配置
+│   └── src/
+│       ├── views/                          # 任务功能页面 (共 34 个独立业务工作台页面)
+│       │   ├── AgentStudioView.vue         # 业务应用列表
+│       │   ├── WorkflowStudioView.vue      # 可视化工作流画布
+│       │   ├── RuntimeWorkspaceView.vue    # 运行工作区 (候选版本/门禁/发布/拓扑比对)
+│       │   ├── ApplicationLaunchView.vue   # 应用多渠道入口管理
+│       │   ├── ChatConsoleView.vue         # 应用对话工作台
+│       │   ├── KnowledgeBaseView.vue       # 知识库与 RAG 检索
+│       │   ├── ModelCenterView.vue         # 模型中心与连通性诊断
+│       │   ├── EvaluationCenterView.vue    # 评测中心与版本测试集
+│       │   ├── WorkflowExecutionView.vue   # 运行中心与链路追踪
+│       │   ├── RuntimeOperationsView.vue   # 故障处理与任务重放
+│       │   ├── ApprovalCenterView.vue      # 任务中心与人工审批
+│       │   ├── EntitlementUsageView.vue    # 套餐权益与用量账本
+│       │   └── DataGovernanceView.vue      # 数据治理与合规冻结
+│       ├── components/                     # 通用组件与工作流节点配置抽屉组件
+│       ├── api/                            # 按业务领域强类型封装的 HTTP 接口层
+│       ├── router/                         # 路由配置与菜单权限守卫
+│       └── layouts/                        # 全局侧边栏与页面框架布局
+├── scripts/                                # 自动化测试与静态合规校验脚本
+└── docs/                                   # 架构设计、部署规范、RAG技术方案与操作手册
 ```
 
-## 10. 校验与排障
+---
 
-### 10.1 编排静态校验
+## 8. 校验与质量保障脚本
 
-```powershell
-npm.cmd run validate:orchestration
-```
+项目在 `scripts/` 目录下提供了用于自动化质量与合规检查的脚本集合：
 
-该命令只检查迁移、节点目录、前端组件和发布契约是否存在，不连接 MySQL，也不能替代真实发布检查。
+- **编排规范静态校验**（检查节点目录、前端组件映射与连线发布契约）：
+  ```powershell
+  cd frontend
+  npm run validate:orchestration
+  ```
+- **企业平台能力全项校验**：
+  ```powershell
+  powershell -ExecutionPolicy Bypass -File scripts/validate-enterprise-platform.ps1
+  ```
+- **运行时强类型契约校验**：
+  ```powershell
+  powershell -ExecutionPolicy Bypass -File scripts/validate-runtime-contract.ps1
+  ```
+- **核心生命周期冒烟流程演练**：
+  ```powershell
+  powershell -ExecutionPolicy Bypass -File scripts/run-core-lifecycle-smoke.ps1
+  ```
 
-### 10.2 常见问题
+---
 
-**登录失败**
+## 9. 常见问题排查 (FAQ)
 
-- 检查数据库是否执行了 `schema.sql` 和 `data.sql`。
-- 检查租户编码、账号和密码是否与基础数据一致。
-- 检查浏览器是否保留了旧 token；必要时退出并清理站点数据。
-- 检查后端日志中的数据库连接和 JWT 配置错误。
+### 9.1 登录提示用户名或密码错误
+- 确认是否已成功导入 `enterprise_agent.sql` 或执行了 `038-development-clean-seed.sql`。
+- 确认所选租户是否为系统租户（编码 `system`），默认管理员用户名为 `admin`，密码为 `admin123`。
+- 检查后端日志中是否存在数据库连接拒绝、时区异常或 JWT 密钥未配置的报错。
 
-**节点库为空**
+### 9.2 知识库切块提示向量写入失败
+- 确认 Qdrant 向量服务是否已在后台启动（默认端口 `6333`）。可通过访问 `http://localhost:6333/dashboard` 验证连通性。
+- 检查 `.env` 中的 `QDRANT_BASE_URL` 配置是否正确；若 Qdrant 设置了 API Key，需同步填写 `QDRANT_API_KEY`。
 
-- 检查 `orchestration_node_type` 是否有基础数据。
-- 检查后端 `/api/orchestration/node-types` 是否返回成功。
-- 检查当前工作流模式是否匹配节点支持的 graph type。
+### 9.3 工作流发布检查未通过
+- 检查是否存在孤立节点：除开始和结束节点外，所有业务节点必须从开始节点可达，并能最终连通至结束节点。
+- 检查节点必填项：模型生成节点是否已绑定有效模型并填写 Prompt；人工审批节点是否已指派审批组；RAG 检索节点是否已选定嵌入模型。
+- 检查当前登录用户是否拥有该应用的发布权限以及所引用模型的调用权限。
 
-**节点配置没有资源**
+### 9.4 流程执行处于等待（PENDING / WAITING）状态
+- 若流程包含“人工审批”节点，流程会在该节点自动挂起；请使用审批组成员账号登录系统，前往“任务中心 (Approval)”提交审批结论后流程将自动推进。
+- 若处于异步队列调度中，确认后端任务轮询线程（Task Queue Worker）是否正常工作。
 
-- 模型节点需要先配置模型连接。
-- 知识节点需要先上传并完成索引。
-- Agent 节点需要先创建 Agent。
-- 审批节点需要先创建组织团队。
-- 工具节点需要先接入启用状态的连接器。
+### 9.5 模型调用返回凭证缺失或未配置
+- 系统默认遵循安全原则，不伪造模型回答；若模型连接未填写真实有效 API Key，后端将抛出明确的业务异常。请在“模型中心”填写真实凭证后再试。
 
-**无法发布**
+---
 
-- 先查看发布检查清单，不要只看前端按钮状态。
-- 确认所有必填字段已保存到草稿。
-- 确认节点目录为 ACTIVE 且存在可用执行器。
-- 确认当前用户拥有工作流发布权和所引用资源的使用权。
+## 10. 安全与合规说明
 
-**执行停留在等待状态**
-
-- 人工审批节点需要在人工审批中心提交决策。
-- 异步任务需要确认持久化任务 worker 正常运行。
-- 检查执行中心中的 lease、heartbeat、错误码和节点事件。
-
-## 11. 当前边界
-
-- 当前项目提供完整的企业 Agent 平台骨架和主要运行链路，但连接器、代码沙箱、部分高级节点仍需根据生产安全策略接入真实执行环境。
-- 启动前必须对目标 MySQL 执行结构和基础数据脚本；不要把“代码能启动”当作数据库初始化完成。
-- 上线前仍应验证真实模型、Redis、多租户隔离、SSE/WebSocket、人工审批和异常恢复链路。
+1. **凭证脱敏与加密**：所有模型 API Key、第三方 Webhook Secret 与连接器凭证在落库前均通过 `APP_SECRET_KEY` 进行对称加密处理，界面展示与日志输出全流程脱敏。
+2. **多租户强制边界**：所有业务查询与数据流转必须显式附带 `tenant_id` 过滤，严禁跨租户越权。
+3. **不可变审计凭据**：任务调用详情、费用计量、人工审批决策和发布门禁报告全量记录不可篡改的业务审计事实，满足企业合规审计要求。
