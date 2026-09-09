@@ -339,3 +339,19 @@ enterprise-agent-studio/
 1. **凭证脱敏与加密**：所有模型 API Key、第三方 Webhook Secret 与连接器凭证在落库前均通过 `APP_SECRET_KEY` 进行对称加密处理，界面展示与日志输出全流程脱敏。
 2. **多租户强制边界**：所有业务查询与数据流转必须显式附带 `tenant_id` 过滤，严禁跨租户越权。
 3. **不可变审计凭据**：任务调用详情、费用计量、人工审批决策和发布门禁报告全量记录不可篡改的业务审计事实，满足企业合规审计要求。
+<img width="2768" height="1538" alt="image" src="https://github.com/user-attachments/assets/59db1bec-0985-458e-810e-fdd05ce1b9f3" />
+<img width="2768" height="1538" alt="image" src="https://github.com/user-attachments/assets/6ba9571b-ac02-4628-923b-4cc49f6dad07" />
+<img width="2768" height="1538" alt="image" src="https://github.com/user-attachments/assets/a65c49e3-3a1f-4bb3-a5bd-56317ead71d1" />
+<img width="2768" height="1538" alt="image" src="https://github.com/user-attachments/assets/7be362c3-eca2-45ee-ac28-9aea2f0c1b93" />
+<img width="2768" height="1538" alt="image" src="https://github.com/user-attachments/assets/0cafb9b9-bf15-4471-99f3-552e4c5c057b" />
+<img width="2768" height="1538" alt="image" src="https://github.com/user-attachments/assets/a72f295e-d3e8-4938-af82-c7f9b05d29cf" />
+<img width="2768" height="1538" alt="image" src="https://github.com/user-attachments/assets/cb95680b-fa0c-4586-937f-4363c7b16e04" />
+<img width="2768" height="1538" alt="image" src="https://github.com/user-attachments/assets/5840df36-1c5d-49f3-8388-442434888781" />
+<img width="2768" height="1538" alt="image" src="https://github.com/user-attachments/assets/2e94e4d4-c9f9-4372-8904-99c5a0a5a430" />
+<img width="2768" height="1538" alt="image" src="https://github.com/user-attachments/assets/1cbd63bf-9f62-41aa-91f5-e7ae47787fe1" />
+<img width="2768" height="1538" alt="image" src="https://github.com/user-attachments/assets/e2aadc9b-57df-4967-a0c7-ef896de506a9" />
+<img width="2768" height="1538" alt="image" src="https://github.com/user-attachments/assets/0939a18e-e177-44ff-9499-99671e58a2bd" />
+<img width="2768" height="1538" alt="image" src="https://github.com/user-attachments/assets/aacec78c-db8c-4ec4-a1ee-cc1fdca27e1a" />
+<img width="2768" height="1538" alt="image" src="https://github.com/user-attachments/assets/033a973f-782e-414a-8c8a-a9ef84162c3a" />
+<img width="2768" height="1538" alt="image" src="https://github.com/user-attachments/assets/0fce4127-6758-4275-8a1f-205aceb7a237" />
+
